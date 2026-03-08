@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مشروع التخرج - تحليل بيانات المشاريع الصغيرة</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background: #ffffff;
+            min-height: 100vh;
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* الخلفية المتحركة */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .shape {
+            position: absolute;
+            background: rgba(37, 99, 235, 0.03);
+            border-radius: 50%;
+            animation: float 15s infinite ease-in-out;
+        }
+
+        .shape-1 { width: 400px; height: 400px; top: -200px; right: -150px; background: #dbeafe; animation-delay: 0s; }
+        .shape-2 { width: 500px; height: 500px; bottom: -250px; left: -200px; background: #bfdbfe; animation-delay: -5s; }
+        .shape-3 { width: 300px; height: 300px; top: 30%; left: 10%; background: #93c5fd; animation-delay: -2s; }
+
+        /* أيقونات المشاريع الصغيرة */
+        .floating-icons {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .floating-icons span {
+            position: absolute;
+            font-size: 70px;
+            color: rgba(37, 99, 235, 0.05);
+            animation: rotate 25s linear infinite;
+            font-family: Arial, sans-serif;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-60px) rotate(15deg); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 60px;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 40px rgba(37, 99, 235, 0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 700;
+            padding: 15px 35px;
+            border-radius: 40px;
+            transition: all 0.4s ease;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .navbar a:hover, .navbar a.active {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Buttons */
+        .download-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 16px 35px;
+            border: none;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .btn-pdf {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        .btn-pdf:hover {
+            background: #2563eb;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-ppt {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-ppt:hover {
+            background: #1e3a8a;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+        }
+
+        /* Pages */
+        .page {
+            display: none;
+            background: rgba(255,255,255,0.98);
+            padding: 70px;
+            border-radius: 60px;
+            box-shadow: 0 40px 80px rgba(37, 99, 235, 0.1);
+            animation: fadeIn 0.7s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            margin: 0 15px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Page 1 - Introduction */
+        .hero {
+            text-align: center;
+            padding: 100px 40px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            border-radius: 50px;
+            color: white;
+            margin-bottom: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero h1 {
+            font-size: 4.2em;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .hero .subtitle {
+            font-size: 2.2em;
+        }
+
+        .introduction {
+            background: #fafafa;
+            padding: 50px;
+            border-radius: 50px;
+            margin-bottom: 50px;
+            border-right: 10px solid #2563eb;
+            font-size: 1.4em;
+            line-height: 2;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        }
+
+        .introduction p {
+            margin-bottom: 25px;
+        }
+
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin: 50px 0;
+        }
+
+        .student-card {
+            background: #ffffff;
+            padding: 40px 25px;
+            border-radius: 50px;
+            text-align: center;
+            transition: all 0.4s ease;
+            border: 1px solid #eeeeee;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+        }
+
+        .student-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 30px 50px rgba(37, 99, 235, 0.15);
+        }
+
+        .student-card .student-avatar {
+            width: 140px;
+            height: 140px;
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            border-radius: 50%;
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3.5em;
+            font-weight: bold;
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.2);
+            transition: transform 0.4s;
+        }
+
+        .student-card:hover .student-avatar {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .student-card h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #1e3a8a;
+        }
+
+        .student-card p {
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        /* ========== PAGE 2 - ANALYSIS MASSIVE EXPANSION ========== */
+        .analysis-content {
+            line-height: 2;
+            font-size: 1.2em;
+        }
+
+        .analysis-section {
+            margin-bottom: 80px;
+            padding: 50px;
+            background: #fafafa;
+            border-radius: 50px;
+            border-right: 10px solid #2563eb;
+            transition: transform 0.3s;
+            page-break-inside: avoid;
+        }
+
+        .analysis-section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 50px rgba(37, 99, 235, 0.1);
+        }
+
+        .analysis-section h2 {
+            color: #1e3a8a;
+            margin-bottom: 35px;
+            padding-bottom: 15px;
+            border-bottom: 4px solid #2563eb;
+            font-size: 2.5em;
+        }
+
+        .analysis-section h3 {
+            color: #1e3a8a;
+            margin: 35px 0 25px;
+            font-size: 2em;
+        }
+
+        .analysis-section h4 {
+            color: #2563eb;
+            margin: 30px 0 20px;
+            font-size: 1.7em;
+        }
+
+        .analysis-section p {
+            margin-bottom: 25px;
+            text-align: justify;
+            font-size: 1.2em;
+        }
+
+        .analysis-section ul, .analysis-section ol {
+            margin-right: 50px;
+            margin-bottom: 30px;
+        }
+
+        .analysis-section li {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .importance-grid, .tools-grid, .challenges-grid, .methods-grid, .stats-grid-detailed {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .importance-item, .tool-item, .challenge-item, .method-item, .stat-item-detailed {
+            background: white;
+            padding: 35px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .importance-item:hover, .tool-item:hover, .challenge-item:hover, .method-item:hover, .stat-item-detailed:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+        }
+
+        .stat-highlight {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 35px;
+            border-radius: 30px;
+            margin: 30px 0;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .quote-box {
+            background: #eff6ff;
+            padding: 40px;
+            border-radius: 30px;
+            margin: 30px 0;
+            border-right: 10px solid #2563eb;
+            font-style: italic;
+            font-size: 1.3em;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 30px 0;
+        }
+
+        .analysis-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .analysis-table th {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.2em;
+        }
+
+        .analysis-table td {
+            padding: 18px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 1.1em;
+        }
+
+        .case-study {
+            background: white;
+            padding: 50px;
+            border-radius: 40px;
+            margin: 30px 0;
+            border: 2px solid #2563eb;
+        }
+
+        /* ========== PAGE 3 - DASHBOARD SUPER DETAILED ========== */
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 4em;
+            color: #1e3a8a;
+        }
+
+        .dashboard-header p {
+            font-size: 1.8em;
+            color: #666;
+        }
+
+        .kpi-mega-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, #f8fafc, #ffffff);
+            padding: 30px 20px;
+            border-radius: 40px;
+            text-align: center;
+            border-right: 8px solid #2563eb;
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 45px rgba(37, 99, 235, 0.2);
+        }
+
+        .kpi-card h4 {
+            font-size: 1.4em;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+
+        .kpi-card .kpi-main-value {
+            font-size: 2.8em;
+            font-weight: bold;
+            color: #2563eb;
+            line-height: 1.2;
+        }
+
+        .kpi-card .kpi-sub-value {
+            font-size: 1.2em;
+            color: #64748b;
+            margin-top: 10px;
+        }
+
+        .kpi-card .trend-up { color: #10b981; font-weight: bold; }
+        .kpi-card .trend-down { color: #ef4444; font-weight: bold; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+            margin-bottom: 60px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 45px 30px;
+            border-radius: 50px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.2);
+            transition: all 0.4s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 35px 60px rgba(37, 99, 235, 0.3);
+        }
+
+        .stat-card .number {
+            font-size: 3.5em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .stat-card h3 {
+            font-size: 1.8em;
+        }
+
+        .charts-mega-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(650px, 1fr));
+            gap: 40px;
+            margin: 60px 0;
+        }
+
+        .chart-mega-box {
+            background: #fafafa;
+            padding: 40px;
+            border-radius: 50px;
+            transition: transform 0.3s;
+            border: 1px solid #f0f0f0;
+        }
+
+        .chart-mega-box:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 45px rgba(37, 99, 235, 0.1);
+        }
+
+        .chart-mega-box h3 {
+            color: #1e3a8a;
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .chart {
+            height: 400px;
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            height: 350px;
+            padding: 30px;
+            background: white;
+            border-radius: 40px;
+        }
+
+        .bar {
+            width: 80px;
+            background: linear-gradient(to top, #1e3a8a, #2563eb);
+            border-radius: 25px 25px 0 0;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .bar:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .pie-chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        .pie-chart {
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: conic-gradient(#1e3a8a 0% 35%, #2563eb 35% 60%, #3b82f6 60% 80%, #60a5fa 80% 100%);
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.2);
+        }
+
+        .pie-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.2em;
+        }
+
+        .legend-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+        }
+
+        .line-chart {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            background: white;
+            padding: 30px;
+            border-radius: 40px;
+            position: relative;
+        }
+
+        .line-point {
+            width: 60px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .point {
+            width: 16px;
+            height: 16px;
+            background: #1e3a8a;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        /* رادار chart بدائي */
+        .radar-chart {
+            width: 100%;
+            height: 350px;
+            background: white;
+            border-radius: 40px;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .radar-svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* فقاعي */
+        .bubble-chart {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            background: white;
+            border-radius: 40px;
+            padding: 40px;
+            min-height: 350px;
+        }
+        .bubble {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #2563eb, #1e3a8a);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 15px 30px rgba(37, 99, 235, 0.3);
+            transition: transform 0.3s;
+        }
+        .bubble:hover {
+            transform: scale(1.05);
+        }
+        .bubble-1 { width: 150px; height: 150px; font-size: 1.3em; }
+        .bubble-2 { width: 120px; height: 120px; font-size: 1.1em; }
+        .bubble-3 { width: 180px; height: 180px; font-size: 1.5em; }
+        .bubble-4 { width: 100px; height: 100px; font-size: 1em; }
+        .bubble-5 { width: 140px; height: 140px; font-size: 1.2em; }
+
+        /* مساحي */
+        .area-chart {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 40px;
+            padding: 30px;
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+        }
+        .area-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .area-fill {
+            width: 60%;
+            background: linear-gradient(to top, #1e3a8a, #60a5fa);
+            border-radius: 20px 20px 0 0;
+            transition: height 0.3s;
+        }
+        .area-label {
+            font-weight: bold;
+            color: #1e3a8a;
+        }
+
+        .recent-data {
+            background: #fafafa;
+            padding: 45px;
+            border-radius: 50px;
+            margin-top: 60px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 30px;
+            background: white;
+            border-radius: 30px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.2em;
+        }
+
+        .data-table td {
+            padding: 18px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 1.1em;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 80px;
+            color: #333;
+            padding: 40px;
+            font-size: 1.3em;
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.9);
+            border-radius: 60px;
+            border: 1px solid rgba(37, 99, 235, 0.1);
+        }
+
+        @media print {
+            .navbar, .download-buttons, footer, .background-animation, .floating-icons {
+                display: none;
+            }
+            .page {
+                display: block !important;
+                box-shadow: none;
+                padding: 20px;
+                background: white;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="background-animation">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    
+    <div class="floating-icons">
+        <span style="top: 5%; left: 3%;">📊</span>
+        <span style="top: 15%; right: 8%;">📈</span>
+        <span style="top: 45%; left: 12%;">📉</span>
+        <span style="top: 65%; right: 15%;">💼</span>
+        <span style="top: 80%; left: 20%;">📋</span>
+        <span style="top: 10%; right: 25%;">📌</span>
+        <span style="top: 35%; left: 35%;">📎</span>
+        <span style="top: 55%; right: 35%;">📁</span>
+        <span style="top: 70%; left: 55%;">📝</span>
+        <span style="top: 25%; right: 55%;">💻</span>
+        <span style="top: 85%; right: 65%;">📱</span>
+        <span style="top: 40%; left: 70%;">💰</span>
+        <span style="top: 60%; right: 75%;">📦</span>
+    </div>
+
+    <div class="container">
+        <nav class="navbar">
+            <ul>
+                <li><a href="#" onclick="showPage('page1')" id="nav-page1" class="active"><span>🏠</span> الرئيسية</a></li>
+                <li><a href="#" onclick="showPage('page2')" id="nav-page2"><span>📊</span> التحليل الموسع</a></li>
+                <li><a href="#" onclick="showPage('page3')" id="nav-page3"><span>📈</span> لوحة المعلومات</a></li>
+            </ul>
+        </nav>
+
+        <!-- الصفحة الرئيسية (ثابتة) -->
+        <div id="page1" class="page active">
+            <div class="hero">
+                <h1>تحليل بيانات المشاريع الصغيرة</h1>
+                <p class="subtitle">مشروع التخرج - المعهد العالي للتسويق والتجارة ونظم المعلومات</p>
+            </div>
+            <div class="introduction">
+                <h2 style="color: #1e3a8a; margin-bottom: 35px; font-size: 2.5em;">مقدمة المشروع</h2>
+                <p>في ظل التطور التكنولوجي المتسارع وزيادة الاعتماد على البيانات في اتخاذ القرارات، أصبح تحليل البيانات أداة أساسية لتحسين أداء المؤسسات والمشروعات. يهدف هذا المشروع إلى تحليل بيانات موقع متخصص في إدارة المشاريع الصغيرة، وذلك لفهم سلوك المستخدمين واستخراج المعلومات التي تساعد على تطوير الأداء وتحسين كفاءة إدارة المشاريع.</p>
+                <p>يعتمد المشروع على جمع البيانات وتنظيمها وتحليلها باستخدام أدوات وتقنيات تحليل البيانات، بهدف الوصول إلى مؤشرات تساعد أصحاب المشاريع الصغيرة على اتخاذ قرارات أفضل، وتحسين التخطيط والمتابعة، وزيادة فرص نجاح المشاريع. من خلال هذا التحليل، نسعى إلى تقديم رؤى قابلة للتنفيذ تدعم رواد الأعمال في رحلتهم نحو النمو والاستدامة.</p>
+            </div>
+            <section>
+                <h2 style="color: #1e3a8a; margin-bottom: 40px; font-size: 2.5em; text-align: center;">الفريق المشارك</h2>
+                <div class="students-grid">
+                    <div class="student-card"><div class="student-avatar">ي</div><h3>يثرب رفعت اسماعيل</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                    <div class="student-card"><div class="student-avatar">م</div><h3>منه الله محمد زكي</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                    <div class="student-card"><div class="student-avatar">ف</div><h3>فاطمه عطيه أحمد</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                    <div class="student-card"><div class="student-avatar">ن</div><h3>ندى وليد حسين</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                    <div class="student-card"><div class="student-avatar">ف</div><h3>فرحه حسن محمد</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                    <div class="student-card"><div class="student-avatar">س</div><h3>سهيله على عبدالعزيز</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                    <div class="student-card"><div class="student-avatar">أ</div><h3>أحمد حربي عبدالناصر</h3><p>الفرقة الرابعة - نظم المعلومات</p></div>
+                </div>
+            </section>
+            <section style="margin-top: 60px;">
+                <h2 style="color: #1e3a8a; margin-bottom: 40px; font-size: 2.5em;">معلومات المشروع</h2>
+                <div style="background: #fafafa; padding: 50px; border-radius: 50px; font-size: 1.5em; border-right: 10px solid #2563eb;">
+                    <p><strong>المشرف:</strong> أ.د. أحمد حسن</p>
+                    <p><strong>المعهد:</strong> المعهد العالي للتسويق والتجارة ونظم المعلومات</p>
+                    <p><strong>القسم:</strong> نظم المعلومات</p>
+                    <p><strong>العام الجامعي:</strong> 2025-2026</p>
+                    <p><strong>تاريخ التقديم:</strong> مايو 2026</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- صفحة التحليل الموسع (ضخمة جداً) -->
+        <div id="page2" class="page">
+            <div class="download-buttons">
+                <button class="btn btn-pdf" onclick="downloadPDF()"><span>📥</span> تحميل كـ PDF</button>
+                <button class="btn btn-ppt" onclick="downloadPPT()"><span>📊</span> تحميل كـ PowerPoint</button>
+            </div>
+            <div class="analysis-content">
+                <h1 style="color: #1e3a8a; margin-bottom: 70px; font-size: 4em; text-align: center;">تحليل شامل وموسع جداً لبيانات المشاريع الصغيرة</h1>
+                
+                <!-- الفصل 1 -->
+                <section class="analysis-section">
+                    <h2>الفصل الأول: مدخل إلى علم تحليل البيانات</h2>
+                    <h3>1.1 التعريف وأهمية تحليل البيانات</h3>
+                    <p>تحليل البيانات هو عملية فحص البيانات وتنقيتها وتحويلها بهدف استخلاص معلومات مفيدة لدعم اتخاذ القرارات. مع التطور الرقمي، أصبحت البيانات هي النفط الجديد، وتحليلها هو الطريقة الأمثل لاستخراج قيمتها. في المشاريع الصغيرة، يساعد تحليل البيانات على تحسين الكفاءة التشغيلية، فهم العملاء، التنبؤ بالمبيعات، تقليل التكاليف، وزيادة الأرباح.</p>
+                    <div class="stat-highlight">أكثر من 70% من المشاريع الصغيرة التي تتبنى تحليل البيانات تحقق نمواً مضاعفاً خلال أول عامين.</div>
+                    
+                    <h3>1.2 مراحل تطور تحليل البيانات عبر العقود</h3>
+                    <ul>
+                        <li><strong>الخمسينيات - السبعينيات:</strong> التحليل اليدوي باستخدام السجلات الورقية والآلات الحاسبة البدائية.</li>
+                        <li><strong>الثمانينيات:</strong> ظهور الحواسيب الشخصية وبرامج جداول البيانات مثل VisiCalc و Lotus 1-2-3.</li>
+                        <li><strong>التسعينيات:</strong> انتشار قواعد البيانات العلائقية (SQL) وأنظمة تخطيط الموارد (ERP).</li>
+                        <li><strong>الألفية الجديدة:</strong> ظهور البيانات الضخمة (Big Data) وتقنيات التخزين الموزعة (Hadoop).</li>
+                        <li><strong>2010 - 2020:</strong> ثورة الذكاء الاصطناعي وتعلم الآلة وتحليل البيانات التنبؤية.</li>
+                        <li><strong>2020 - الآن:</strong> دمج تحليل البيانات مع إنترنت الأشياء والحوسبة السحابية والتحليل الفوري.</li>
+                    </ul>
+
+                    <h3>1.3 الأبعاد الأربعة لتحليل البيانات</h3>
+                    <ul>
+                        <li><strong>التحليل الوصفي (Descriptive):</strong> يركز على وصف ما حدث بالفعل (مثل تقارير المبيعات الشهرية).</li>
+                        <li><strong>التحليل التشخيصي (Diagnostic):</strong> يبحث في أسباب حدوث الأمور (لماذا انخفضت المبيعات؟).</li>
+                        <li><strong>التحليل التنبؤي (Predictive):</strong> يستخدم النماذج الإحصائية لتوقع ما سيحدث (توقعات المبيعات للربع القادم).</li>
+                        <li><strong>التحليل التوجيهي (Prescriptive):</strong> يقدم توصيات وإجراءات محددة (ما الإجراءات التي يجب اتخاذها لتحقيق الأهداف).</li>
+                    </ul>
+                </section>
+
+                <!-- الفصل 2 -->
+                <section class="analysis-section">
+                    <h2>الفصل الثاني: الأهمية الاستراتيجية لتحليل البيانات في المشاريع الصغيرة</h2>
+                    <div class="importance-grid">
+                        <div class="importance-item"><h3>1. تحسين عملية اتخاذ القرار</h3><p>يقدم التحليل رؤى موضوعية تقلل من التحيز والتخمين، مما يؤدي إلى قرارات أفضل. المشاريع التي تعتمد على البيانات تقلل من مخاطر الفشل بنسبة 40%.</p></div>
+                        <div class="importance-item"><h3>2. فهم أعمق للعملاء</h3><p>يساعد تحليل بيانات العملاء في تقسيمهم وفهم تفضيلاتهم وسلوكهم، مما يزيد من فعالية الحملات التسويقية ويرفع معدلات الاحتفاظ بالعملاء بنسبة تصل إلى 50%.</p></div>
+                        <div class="importance-item"><h3>3. تحسين الكفاءة التشغيلية وخفض التكاليف</h3><p>يكشف تحليل العمليات عن الاختناقات والهدر، مما يسمح بتحسين سير العمل وخفض التكاليف بنسبة 25-30% في المتوسط.</p></div>
+                        <div class="importance-item"><h3>4. التنبؤ بالاتجاهات والمخاطر</h3><p>يمكن للنماذج التنبؤية توقع تغيرات السوق واحتياجات العملاء، مما يسمح للمشروع بالتكيف المبكر وتجنب المخاطر المحتملة.</p></div>
+                        <div class="importance-item"><h3>5. تحسين استراتيجيات التسويق</h3><p>يساعد في تحديد القنوات الأكثر فعالية، وقياس عائد الاستثمار للحملات، وتحسين استهداف العملاء المحتملين.</p></div>
+                        <div class="importance-item"><h3>6. تطوير المنتجات والخدمات</h3><p>تكشف تحليلات استخدام المنتج وملاحظات العملاء عن فرص التحسين والابتكار، مما يزيد من تنافسية المشروع.</p></div>
+                        <div class="importance-item"><h3>7. إدارة المخاطر المالية</h3><p>يساعد في تحليل التدفقات النقدية، وتحديد العملاء المتعثرين، والتنبؤ بمشاكل السيولة قبل حدوثها.</p></div>
+                        <div class="importance-item"><h3>8. قياس الأداء بدقة</h3><p>يوفر مؤشرات أداء رئيسية (KPIs) واضحة لمختلف جوانب المشروع، مما يمكن من متابعة التقدم نحو الأهداف.</p></div>
+                        <div class="importance-item"><h3>9. تعزيز الميزة التنافسية</h3><p>يمكن للمشاريع الصغيرة التي تستخدم البيانات بذكاء أن تنافس كبريات الشركات من خلال سرعة التكيف والتخصيص.</p></div>
+                        <div class="importance-item"><h3>10. جذب الاستثمارات</h3><p>المستثمرون يفضلون المشاريع التي تعتمد على البيانات ولديها رؤية واضحة مدعومة بالأرقام، مما يزيد فرص الحصول على التمويل.</p></div>
+                    </div>
+                </section>
+
+                <!-- الفصل 3 -->
+                <section class="analysis-section">
+                    <h2>الفصل الثالث: مصادر البيانات وأنواعها في المشاريع الصغيرة</h2>
+                    <h3>3.1 البيانات المالية والمحاسبية</h3>
+                    <p>تشمل الإيرادات، المصروفات، الأرباح، التدفقات النقدية، المبيعات اليومية، الفواتير، هوامش الربح، عائد الاستثمار، تكلفة البضاعة المباعة. هذه البيانات هي أساس أي تحليل مالي.</p>
+                    
+                    <h3>3.2 بيانات العملاء والتسويق</h3>
+                    <p>المعلومات الديموغرافية (العمر، الجنس، الموقع)، سلوك الشراء، تفضيلات المنتجات، قنوات الوصول، تفاعلات وسائل التواصل الاجتماعي، نتائج الاستبيانات، شكاوى العملاء، معدلات التحويل، تكلفة اكتساب العميل.</p>
+                    
+                    <h3>3.3 بيانات العمليات والإنتاج</h3>
+                    <p>كفاءة الإنتاج، أوقات التصنيع، جودة المنتج (معدلات العيوب)، إنتاجية الموظفين، سرعة دوران المخزون، أوقات التسليم، استخدام الموارد.</p>
+                    
+                    <h3>3.4 بيانات الموارد البشرية</h3>
+                    <p>أداء الموظفين، معدلات الغياب، دوران العمالة، تكاليف التدريب، رضا الموظفين، ساعات العمل الإضافية.</p>
+                    
+                    <h3>3.5 البيانات الخارجية</h3>
+                    <p>اتجاهات السوق، تحليل المنافسين، المؤشرات الاقتصادية، البيانات السكانية، تقارير الصناعة، الطقس (لبعض المشاريع).</p>
+                    
+                    <h3>3.6 مصادر جمع البيانات</h3>
+                    <ul>
+                        <li><strong>نقاط البيع (POS):</strong> لتسجيل المبيعات الفورية.</li>
+                        <li><strong>أنظمة إدارة العلاقات مع العملاء (CRM):</strong> لتتبع تفاعلات العملاء.</li>
+                        <li><strong>أنظمة تخطيط الموارد (ERP):</strong> لدمج بيانات الإدارة المالية والتشغيلية.</li>
+                        <li><strong>أدوات تحليلات الويب (Google Analytics):</strong> لفهم سلوك زوار الموقع الإلكتروني.</li>
+                        <li><strong>منصات التواصل الاجتماعي:</strong> لقياس التفاعل والوصول.</li>
+                        <li><strong>الاستبيانات واستمارات التغذية الراجعة.</strong></li>
+                        <li><strong>الأجهزة الذكية وأجهزة الاستشعار (لإنترنت الأشياء).</strong></li>
+                    </ul>
+                </section>
+
+                <!-- الفصل 4 -->
+                <section class="analysis-section">
+                    <h2>الفصل الرابع: أدوات وتقنيات تحليل البيانات (دليل شامل)</h2>
+                    <div class="tools-grid">
+                        <div class="tool-item"><h3>Microsoft Excel</h3><p>الأداة الأكثر انتشاراً. توفر جداول محورية (PivotTables)، دوال إحصائية متقدمة، رسوم بيانية متنوعة، إضافات تحليل (Analysis ToolPak). مثالي للتحليلات متوسطة الحجم.</p></div>
+                        <div class="tool-item"><h3>Google Sheets</h3><p>الإصدار السحابي من جداول البيانات، يتيح التعاون الفوري والتكامل مع خدمات جوجل الأخرى.</p></div>
+                        <div class="tool-item"><h3>Python</h3><p>لغة برمجة قوية مفتوحة المصدر. مكتباتها الأساسية: Pandas (لتحليل البيانات)، NumPy (للحسابات الرقمية)، Matplotlib/Seaborn (للتصور)، Scikit-learn (لتعلم الآلة).</p></div>
+                        <div class="tool-item"><h3>R</h3><p>لغة برمجة متخصصة في الإحصاء وتحليل البيانات، تمتلك مكتبات ضخمة للتحليل والنمذجة الإحصائية والرسوم البيانية عالية الجودة (ggplot2).</p></div>
+                        <div class="tool-item"><h3>SQL</h3><p>لغة الاستعلام الهيكلية، أساسية للتعامل مع قواعد البيانات العلائقية واستخراج البيانات منها.</p></div>
+                        <div class="tool-item"><h3>Power BI</h3><p>أداة من مايكروسوفت لإنشاء لوحات معلومات تفاعلية وتقارير غنية بالرسوم البيانية، مع قدرات تكامل عالية مع منتجات مايكروسوفت الأخرى.</p></div>
+                        <div class="tool-item"><h3>Tableau</h3><p>أداة رائدة في تصور البيانات، تتميز بقدراتها البصرية الهائلة وسهولة استخدامها لإنشاء رسوم بيانية معقدة وتفاعلية.</p></div>
+                        <div class="tool-item"><h3>Google Analytics</h3><p>أداة مجانية لتحليل حركة المرور على المواقع الإلكترونية، توفر بيانات غنية عن الزوار وسلوكهم ومصادر الزيارات.</p></div>
+                        <div class="tool-item"><h3>QlikView / Qlik Sense</h3><p>أدوات ذكاء أعمال تتيح استكشاف البيانات بحرية، مع نموذج بيانات ارتباطي في الذاكرة.</p></div>
+                        <div class="tool-item"><h3>Apache Spark</h3><p>محرك موحد لتحليل البيانات الضخمة، يتيح المعالجة الموزعة والتحليل في الوقت الفعلي.</p></div>
+                        <div class="tool-item"><h3>KNIME / RapidMiner</h3><p>منصات مفتوحة المصدر لعلوم البيانات، تتيح بناء تدفقات عمل تحليلية عبر واجهات رسومية دون برمجة.</p></div>
+                        <div class="tool-item"><h3>IBM SPSS</h3><p>حزمة برامج إحصائية تستخدم على نطاق واسع في الأبحاث الأكاديمية والتجارية، خصوصاً في العلوم الاجتماعية.</p></div>
+                    </div>
+                </section>
+
+                <!-- الفصل 5 -->
+                <section class="analysis-section">
+                    <h2>الفصل الخامس: المنهجية العلمية لتطبيق تحليل البيانات (خطوة بخطوة)</h2>
+                    <h3>5.1 تحديد أهداف العمل (Business Understanding)</h3>
+                    <p>تبدأ أي عملية تحليل بتحديد الأهداف بوضوح وفقاً لمعايير SMART: محددة (Specific)، قابلة للقياس (Measurable)، قابلة للتحقيق (Achievable)، مرتبطة بالمشروع (Relevant)، محددة زمنياً (Time-bound). مثال: "زيادة المبيعات عبر الإنترنت بنسبة 20% خلال الربع القادم".</p>
+                    
+                    <h3>5.2 فهم البيانات (Data Understanding)</h3>
+                    <p>جمع البيانات الأولية من المصادر المحددة، واستكشافها لفهم خصائصها، وتحديد جودتها، واكتشاف الأنماط الأولية. يشمل ذلك الإحصائيات الوصفية والتصورات الأولية.</p>
+                    
+                    <h3>5.3 إعداد وتنظيف البيانات (Data Preparation)</h3>
+                    <p>أهم وأكثر خطوة تستهلك وقتاً (تصل إلى 80% من وقت المشروع). تتضمن: تنظيف البيانات (معالجة القيم المفقودة، إزالة التكرارات، تصحيح الأخطاء)، تحويل البيانات (تطبيع، توحيد مقاييس)، إنشاء متغيرات جديدة (Feature Engineering)، دمج البيانات من مصادر مختلفة.</p>
+                    <div class="quote-box">"البيانات النظيفة هي أساس أي تحليل ناجح. القمامة داخلاً = قمامة خارجاً (Garbage In, Garbage Out)."</div>
+                    
+                    <h3>5.4 النمذجة (Modeling)</h3>
+                    <p>اختيار وتطبيق تقنيات التحليل المناسبة (إحصائية، تعلم آلة، استكشافية) على البيانات المجهزة. يتم تدريب النماذج واختبارها وتحسين معلماتها للحصول على أفضل أداء.</p>
+                    
+                    <h3>5.5 تقييم النماذج (Evaluation)</h3>
+                    <p>تقييم نتائج النماذج للتأكد من أنها تحقق أهداف العمل المحددة، وليست مجرد نتائج إحصائية جيدة. يتم التحقق من دقة النموذج وقوته التفسيرية.</p>
+                    
+                    <h3>5.6 نشر النتائج (Deployment)</h3>
+                    <p>تقديم نتائج التحليل بشكل مفهوم ومؤثر لأصحاب القرار. قد يشمل ذلك تقارير مكتوبة، عروض تقديمية، لوحات معلومات تفاعلية، أو حتى دمج النموذج في نظام تشغيلي. المتابعة وقياس أثر التوصيات جزء أساسي من هذه المرحلة.</p>
+                </section>
+
+                <!-- الفصل 6 -->
+                <section class="analysis-section">
+                    <h2>الفصل السادس: مؤشرات الأداء الرئيسية (KPIs) بالتفصيل الممل</h2>
+                    <div class="stats-grid-detailed">
+                        <div class="stat-item-detailed"><h4>إجمالي الإيرادات (Total Revenue)</h4><p>مجموع الدخل من المبيعات. يقيس حجم الأعمال. يُفضل متابعته يومياً/شهرياً.</p></div>
+                        <div class="stat-item-detailed"><h4>صافي الربح (Net Profit)</h4><p>الإيرادات - جميع المصروفات. المؤشر الحقيقي لربحية المشروع. يستهدف عادة 10-20% من الإيرادات.</p></div>
+                        <div class="stat-item-detailed"><h4>هامش الربح الإجمالي (Gross Profit Margin)</h4><p>(الإيرادات - تكلفة البضاعة) / الإيرادات. يقيس كفاءة الإنتاج والتسعير. النسبة المثالية تختلف حسب القطاع (غالباً >40%).</p></div>
+                        <div class="stat-item-detailed"><h4>عائد الاستثمار (ROI)</h4><p>(الربح - تكلفة الاستثمار) / تكلفة الاستثمار. يقيس كفاءة استثمار معين. يستهدف عادة >20%.</p></div>
+                        <div class="stat-item-detailed"><h4>تكلفة اكتساب العميل (CAC)</h4><p>إجمالي مصاريف التسويق والمبيعات / عدد العملاء الجدد. كلما كان أقل كان أفضل، ولكن يجب مقارنته بالقيمة الدائمة للعميل.</p></div>
+                        <div class="stat-item-detailed"><h4>القيمة الدائمة للعميل (CLV)</h4><p>متوسط قيمة الشراء × متوسط عدد المشتريات في السنة × متوسط عدد سنوات الاحتفاظ بالعميل. يحدد مقدار ما يمكن استثماره لاكتساب عميل جديد.</p></div>
+                        <div class="stat-item-detailed"><h4>معدل الاحتفاظ بالعملاء (Retention Rate)</h4><p>(عدد العملاء في نهاية الفترة - العملاء الجدد) / عدد العملاء في بداية الفترة. مؤشر على ولاء العملاء وجودة الخدمة/المنتج.</p></div>
+                        <div class="stat-item-detailed"><h4>معدل التحويل (Conversion Rate)</h4><p>عدد الزوار الذين نفذوا الإجراء المطلوب (شراء، اشتراك) / إجمالي عدد الزوار. يقيس فعالية الموقع/الحملة التسويقية.</p></div>
+                        <div class="stat-item-detailed"><h4>معدل دوران المخزون (Inventory Turnover)</h4><p>تكلفة البضاعة المباعة / متوسط قيمة المخزون. يقيس كفاءة إدارة المخزون. الارتفاع قد يعني مبيعات جيدة أو نقص في المخزون، والانخفاض قد يعني زيادة في المخزون أو ضعف مبيعات.</p></div>
+                        <div class="stat-item-detailed"><h4>صافي نقاط الترويج (NPS)</h4><p>مقياس لرضا العملاء وولائهم من خلال سؤال: "ما مدى احتمالية أن توصي بنا لصديق؟". الدرجات من -100 إلى +100، والدرجات الموجبة تعتبر جيدة.</p></div>
+                        <div class="stat-item-detailed"><h4>متوسط قيمة الطلب (AOV)</h4><p>إجمالي الإيرادات / عدد الطلبات. يمكن زيادتها عبر البيع الإضافي والتجميعي.</p></div>
+                        <div class="stat-item-detailed"><h4>إنتاجية الموظف (Employee Productivity)</h4><p>الإيرادات / عدد الموظفين، أو عدد الوحدات المنتجة / عدد ساعات العمل. يقيس كفاءة القوى العاملة.</p></div>
+                        <div class="stat-item-detailed"><h4>نسبة العيوب (Defect Rate)</h4><p>عدد المنتجات المعيبة / إجمالي المنتجات المنتجة. مؤشر رئيسي لجودة الإنتاج.</p></div>
+                        <div class="stat-item-detailed"><h4>نسبة السيولة السريعة (Quick Ratio)</h4><p>(الأصول المتداولة - المخزون) / الخصوم المتداولة. يقيس قدرة المشروع على سداد التزاماته قصيرة الأجل.</p></div>
+                    </div>
+                </section>
+
+                <!-- الفصل 7 -->
+                <section class="analysis-section">
+                    <h2>الفصل السابع: تحديات تحليل البيانات في المشاريع الصغيرة (وهم كتير)</h2>
+                    <div class="challenges-grid">
+                        <div class="challenge-item"><h3>١. قلة الموارد المالية</h3><p>العديد من الأدوات المتقدمة باهظة الثمن. <strong>الحل:</strong> استخدام البدائل مفتوحة المصدر والمجانية (Python، R، KNIME، Google Analytics، الإصدارات المجانية من Power BI وTableau).</p></div>
+                        <div class="challenge-item"><h3>٢. نقص الخبرات والمهارات</h3><p>قد لا يمتلك فريق العمل المهارات التحليلية اللازمة. <strong>الحل:</strong> تدريب الموظفين (دورات أونلاين)، الاستعانة بمستشارين أو متدربين من الجامعات، البدء بأدوات بسيطة ثم التدرج.</p></div>
+                        <div class="challenge-item"><h3>٣. جودة البيانات الرديئة</h3><p>بيانات غير كاملة، غير دقيقة، مكررة، أو قديمة. <strong>الحل:</strong> وضع إجراءات واضحة لإدخال البيانات، استخدام أنظمة آلية لتقليل الأخطاء البشرية، تنظيف البيانات بشكل دوري، تدريب الموظفين على أهمية جودة البيانات.</p></div>
+                        <div class="challenge-item"><h3>٤. قلة حجم البيانات</h3><p>قد لا يكون لدى المشروع الصغير حجم بيانات كافٍ لاستخلاص استنتاجات ذات دلالة إحصائية. <strong>الحل:</strong> جمع البيانات من مصادر متعددة (داخلية وخارجية)، استخدام بيانات على فترات زمنية أطول، التركيز على التحليل النوعي إلى جانب الكمي، استخدام تقنيات إحصائية تناسب العينات الصغيرة.</p></div>
+                        <div class="challenge-item"><h3>٥. صعوبة اختيار الأدوات المناسبة</h3><p>تعدد الأدوات يصعب عملية الاختيار. <strong>الحل:</strong> البدء بأدوات بسيطة ومجانية تلبي الاحتياجات الحالية، ثم التوسع تدريجياً مع تطور المشروع وخبرة الفريق.</p></div>
+                        <div class="challenge-item"><h3>٦. مقاومة التغيير الثقافي</h3><p>قد يواجه الاعتماد على البيانات مقاومة من بعض الموظفين أو الإدارة المعتادين على اتخاذ القرارات بالحدس. <strong>الحل:</strong> إشراك الجميع في عملية التحليل، عرض قصص نجاح ملموسة، تدريب القيادات على فوائد القرار المبني على البيانات.</p></div>
+                        <div class="challenge-item"><h3>٧. الخصوصية والأمان</h3><p>جمع وتحليل بيانات العملاء يفرض مسؤولية حمايتها. <strong>الحل:</strong> الالتزام بقوانين حماية البيانات، استخدام ممارسات أمنية قوية، إخفاء هوية البيانات عند التحليل.</p></div>
+                        <div class="challenge-item"><h3>٨. التكامل بين الأنظمة المختلفة</h3><p>قد تكون البيانات مبعثرة في أنظمة منفصلة لا تتواصل معاً. <strong>الحل:</strong> استخدام أدوات تكامل (Zapier، APIs)، أو التفكير في نظام ERP شامل يتناسب مع حجم المشروع.</p></div>
+                    </div>
+                </section>
+
+                <!-- الفصل 8 -->
+                <section class="analysis-section">
+                    <h2>الفصل الثامن: دراسات حالة تطبيقية (واقعية جداً)</h2>
+                    
+                    <div class="case-study">
+                        <h3>دراسة حالة (1): متجر إلكتروني للإكسسوارات النسائية</h3>
+                        <p><strong>المشكلة:</strong> ارتفاع تكلفة اكتساب العميل (CAC) إلى 450 جنيه، مع انخفاض معدل التحويل (1.2%) وارتفاع نسبة التخلي عن سلة الشراء (78%).</p>
+                        <p><strong>التحليل:</strong> باستخدام Google Analytics وتحليل مسار التحويل (Funnel Analysis)، تم اكتشاف أن معظم العملاء يتخلون عن الشراء في صفحة الدفع بسبب تعقيد الإجراءات وارتفاع تكاليف الشحن غير المتوقعة. كما أظهر تحليل مصادر الزيارات أن حملات فيسبوك تستنزف ميزانية كبيرة بجودة زيارات منخفضة.</p>
+                        <p><strong>الإجراءات:</strong> تبسيط عملية الدفع (الدفع كضيف)، إضافة عروض شحن مجاني عند حد معين، إعادة توزيع ميزانية التسويق لصالح جوجل أدز والإعلانات المستهدفة، تحسين سرعة الموقع.</p>
+                        <p><strong>النتائج بعد 4 أشهر:</strong> انخفاض CAC إلى 290 جنيه (▼36%)، ارتفاع معدل التحويل إلى 2.9% (▲142%)، انخفاض نسبة التخلي عن السلة إلى 60% (▼23%)، زيادة الإيرادات بنسبة 95%.</p>
+                    </div>
+
+                    <div class="case-study">
+                        <h3>دراسة حالة (2): مقهى ومطعم صغير</h3>
+                        <p><strong>المشكلة:</strong> انخفاض المبيعات في أيام منتصف الأسبوع، وارتفاع هدر المواد الغذائية إلى 15%، وشكاوى من بطء الخدمة في أوقات الذروة.</p>
+                        <p><strong>التحليل:</strong> تحليل بيانات المبيعات (نظام نقاط البيع) كشف عن انخفاض مبيعات أيام الأحد والإثنين. تحليل المخزون أظهر أن هدر المواد يتركز في صنفين رئيسيين. مراقبة أوقات الخدمة في أوقات الذروة كشفت عن اختناق في المطبخ بسبب طلب عالٍ على وجبة معينة.</p>
+                        <p><strong>الإجراءات:</strong> تقديم عروض خاصة (خصومات، وجبات غداء) أيام الأحد والإثنين. تعديل قائمة الطعام لتقليل المكونات القابلة للتلف، وتدريب الطهاة على إعادة استخدامها. تعديل تجهيزات المطبخ قبل أوقات الذروة، وإضافة خيار الطلب المسبق.</p>
+                        <p><strong>النتائج بعد 3 أشهر:</strong> زيادة مبيعات أيام الركود بنسبة 45%، تقليل هدر المواد إلى 6% (▼60%)، انخفاض وقت انتظار العملاء في الذروة بنسبة 35%، ارتفاع هامش الربح الإجمالي من 15% إلى 24%.</p>
+                    </div>
+
+                    <div class="case-study">
+                        <h3>دراسة حالة (3): شركة ناشئة في مجال البرمجيات (SaaS)</h3>
+                        <p><strong>المشكلة:</strong> ارتفاع معدل توقف العملاء (Churn Rate) إلى 8% شهرياً، وصعوبة تحديد سبب ترك العملاء للخدمة.</p>
+                        <p><strong>التحليل:</strong> تحليل بيانات استخدام العملاء كشف أن المجموعة الأكثر توقفاً هي تلك التي لم تستخدم ميزة التكامل مع الأدوات الأخرى خلال أول أسبوعين. استبيانات الخروج أظهرت أن بعض العملاء يجدون صعوبة في البدء.</p>
+                        <p><strong>الإجراءات:</strong> تطوير عملية تأهيل (Onboarding) تفاعلية تركز على شرح الميزات الأساسية والتكاملات. إطلاق حملات بريد إلكتروني تلقائية لتشجيع استخدام هذه الميزات. تخصيص فريق دعم للتواصل مع العملاء الجدد في الأسبوع الأول.</p>
+                        <p><strong>النتائج بعد 6 أشهر:</strong> انخفاض معدل التوقف الشهري إلى 4% (▼50%)، زيادة القيمة الدائمة للعميل (LTV) بنسبة 35%، تحسن صافي نقاط الترويج (NPS) من +12 إلى +45.</p>
+                    </div>
+
+                    <div class="case-study">
+                        <h3>دراسة حالة (4): ورشة نجارة أثاث حسب الطلب</h3>
+                        <p><strong>المشكلة:</strong> تأخير متكرر في تسليم الطلبات، وزيادة في تكاليف الخامات.</p>
+                        <p><strong>التحليل:</strong> تحليل أوقات الإنتاج لكل قطعة أثاث أظهر تبايناً كبيراً. تحليل المخزون أظهر أن بعض الأخشاب راكدة لأشهر. تحليل أسباب التأخير رجعت إلى سوء تقدير وقت التصنيع وضعف التخطيط لجدول الإنتاج.</p>
+                        <p><strong>الإجراءات:</strong> تطوير جدول إنتاج زمني قياسي لكل قطعة بناءً على البيانات التاريخية. تحسين عملية شراء الخامات بناءً على الطلبات الفعلية. تطبيق نظام بسيط لتخطيط الإنتاج (كانبان).</p>
+                        <p><strong>النتائج بعد 5 أشهر:</strong> انخفاض نسبة التأخير في التسليم من 40% إلى 12%، تقليل المخزون الراكد بنسبة 50%، زيادة عدد الطلبات المنفذة شهرياً بنسبة 25%.</p>
+                    </div>
+                </section>
+
+                <!-- الفصل 9 -->
+                <section class="analysis-section">
+                    <h2>الفصل التاسع: تقنيات متقدمة في تحليل البيانات</h2>
+                    <h3>9.1 التحليل العنقودي (Clustering)</h3>
+                    <p>تقنية تقسيم العملاء أو المنتجات إلى مجموعات متشابهة بناءً على خصائص معينة. يساعد في التخصيص والتسويق المستهدف. (مثال: تقسيم العملاء إلى وفّير، متوسط، اقتصادي).</p>
+                    
+                    <h3>9.2 تحليل الانحدار (Regression Analysis)</h3>
+                    <p>فهم العلاقة بين متغير تابع (مثل المبيعات) ومتغيرات مستقلة (مثل الإنفاق الإعلاني، الموسم). يستخدم للتنبؤ وتحديد العوامل الأكثر تأثيراً.</p>
+                    
+                    <h3>9.3 تحليل السلاسل الزمنية (Time Series Analysis)</h3>
+                    <p>تحليل بيانات مرتبة زمنياً لتحديد الأنماط (موسمية، اتجاهات) والتنبؤ بالقيم المستقبلية. أساسي لتوقع المبيعات والمخزون.</p>
+                    
+                    <h3>9.4 تحليل سلة السوق (Market Basket Analysis)</h3>
+                    <p>تقنية اكتشاف العلاقات بين المنتجات التي يتم شراؤها معاً. تستخدم لتوصيات المنتجات وتصميم العروض. (مثال: من اشترى حفاضات اشترى أيضاً مناديل مبللة).</p>
+                    
+                    <h3>9.5 تحليل المشاعر (Sentiment Analysis)</h3>
+                    <p>استخدام معالجة اللغة الطبيعية لتحليل آراء العملاء على وسائل التواصل الاجتماعي والمراجعات، وتحديد ما إذا كانت إيجابية، سلبية، أو محايدة.</p>
+                    
+                    <h3>9.6 النمذجة التنبؤية (Predictive Modeling)</h3>
+                    <p>استخدام تقنيات تعلم الآلة (مثل أشجار القرار، الغابات العشوائية، الشبكات العصبية) لبناء نماذج تتنبأ بسلوك العملاء، احتمالية توقفهم، أو تقدير القيمة الدائمة لهم.</p>
+                </section>
+
+                <!-- الفصل 10 -->
+                <section class="analysis-section">
+                    <h2>الفصل العاشر: تصور البيانات (Data Visualization) وأهميته</h2>
+                    <p>تصور البيانات هو تمثيل البيانات في شكل رسومي أو بياني. يهدف إلى توصيل المعلومات بشكل واضح وفعال. الدماغ البشري يعالج الصور أسرع بـ 60,000 مرة من النصوص.</p>
+                    <h3>أنواع الرسوم البيانية الشائعة:</h3>
+                    <ul>
+                        <li><strong>الأعمدة (Bar Chart):</strong> لمقارنة الفئات المختلفة.</li>
+                        <li><strong>الخطي (Line Chart):</strong> لإظهار الاتجاهات عبر الزمن.</li>
+                        <li><strong>الدائري (Pie Chart):</strong> لإظهار نسب مكونات الكل (استخدم بحذر مع وجود فئات كثيرة).</li>
+                        <li><strong>المبعثر (Scatter Plot):</strong> لإظهار العلاقة بين متغيرين كميين.</li>
+                        <li><strong>المنطقة (Area Chart):</strong> لإظهار حجم التغير عبر الزمن.</li>
+                        <li><strong>الفقاعي (Bubble Chart):</strong> لعرض ثلاث أبعاد من البيانات (محورين + حجم الفقاعة).</li>
+                        <li><strong>الرادار (Radar Chart):</strong> لمقارنة المتغيرات المتعددة (مثل أداء فريق في عدة مهارات).</li>
+                        <li><strong>الهرمي (Treemap):</strong> لعرض البيانات الهرمية على شكل مستطيلات متداخلة.</li>
+                        <li><strong>الخريطة الحرارية (Heatmap):</strong> لإظهار التركيز أو الكثافة عبر مصفوفة ألوان.</li>
+                    </ul>
+                    <div class="quote-box">"الرسم البياني الجيد هو الذي يروي قصة بوضوح، دون تشويش أو تضليل."</div>
+                </section>
+
+                <!-- الفصل 11 -->
+                <section class="analysis-section">
+                    <h2>الفصل الحادي عشر: أخلاقيات تحليل البيانات والخصوصية</h2>
+                    <p>مع تزايد الاعتماد على البيانات، تبرز مسؤولية أخلاقية كبيرة تجاه كيفية جمعها وتحليلها واستخدامها.</p>
+                    <ul>
+                        <li><strong>الشفافية:</strong> إبلاغ العملاء بكيفية جمع بياناتهم واستخدامها.</li>
+                        <li><strong>الموافقة:</strong> الحصول على موافقة صريحة قبل جمع البيانات الحساسة.</li>
+                        <li><strong>أمن البيانات:</strong> حماية البيانات من الاختراق والاستخدام غير المصرح به.</li>
+                        <li><strong>الدقة:</strong> التأكد من دقة البيانات والتحليلات، وتجنب استنتاجات مضللة.</li>
+                        <li><strong>الخصوصية:</strong> عدم مشاركة البيانات الفردية دون موافقة، وإخفاء الهوية عند الإمكان.</li>
+                        <li><strong>تجنب التحيز:</strong> التأكد من أن البيانات والنماذج لا تنتج تحيزات ضد مجموعات معينة.</li>
+                        <li><strong>الإنصاف:</strong> استخدام التحليلات لتحقيق العدالة، لا لتعزيز التمييز.</li>
+                    </ul>
+                    <div class="stat-highlight">65% من العملاء سيتوقفون عن التعامل مع مشروع إذا اكتشفوا سوء استخدام لبياناتهم.</div>
+                </section>
+
+                <!-- الفصل 12 -->
+                <section class="analysis-section">
+                    <h2>الفصل الثاني عشر: مستقبل تحليل البيانات في المشاريع الصغيرة</h2>
+                    <p>الذكاء الاصطناعي وتحليل البيانات في الوقت الفعلي، ديمقراطية البيانات، تكامل إنترنت الأشياء، التحليل التلقائي، حوسبة الحافة، وأدوات التحليل باللغة الطبيعية.</p>
+                    <div class="stat-highlight">85% من المشاريع الصغيرة ستستخدم أدوات تحليل تعتمد على الذكاء الاصطناعي بحلول 2028.</div>
+                </section>
+
+                <!-- الفصل 13 -->
+                <section class="analysis-section">
+                    <h2>الفصل الثالث عشر: بناء ثقافة البيانات في المشروع</h2>
+                    <p>ثقافة البيانات هي بيئة يتم فيها تشجيع الجميع على اتخاذ القرارات بناءً على البيانات، وتتوفر الأدوات والمهارات اللازمة لذلك. لبناء هذه الثقافة: دعم القيادة العليا، توفير التدريب، الوصول إلى البيانات، مكافأة الفضول التحليلي، دمج البيانات في الاجتماعات الدورية، مشاركة النجاحات.</p>
+                </section>
+
+                <!-- الفصل 14 -->
+                <section class="analysis-section">
+                    <h2>الفصل الرابع عشر: خطة عمل تفصيلية لبدء رحلة تحليل البيانات (90 يوماً)</h2>
+                    <ul>
+                        <li><strong>الأسبوع 1-2: التقييم والتخطيط:</strong> حصر جميع مصادر البيانات الحالية (إكسل، نظام نقاط بيع، CRM). تحديد أهم 3-5 أسئلة تجارية تحتاج إجابة (مثل: من هم عملائي الأكثر ربحية؟). تحديد الأدوات البسيطة التي سنبدأ بها (مثل: Excel أو Google Sheets).</li>
+                        <li><strong>الأسبوع 3-4: إعداد البنية التحتية:</strong> تنظيف البيانات الموجودة (إزالة تكرارات، تصحيح أخطاء). إنشاء قالب موحد لإدخال البيانات الجديدة. ربط المصادر البسيطة إن أمكن (مثل ربط إكسل بحساب جوجل أناليتكس).</li>
+                        <li><strong>الأسبوع 5-8: التحليل الاستكشافي:</strong> البدء بتحليل البيانات باستخدام الجداول المحورية والرسوم البيانية البسيطة. البحث عن الأنماط والاتجاهات الأولى. إشراك فريق المبيعات أو التشغيل في تفسير هذه النتائج.</li>
+                        <li><strong>الأسبوع 9-10: استخلاص الرؤى والتوصيات:</strong> تحويل النتائج إلى رؤى قابلة للتنفيذ (مثال: "العملاء من المنطقة (أ) يشترون ضعف متوسط الشراء، لذا نستهدفهم بحملة خاصة"). صياغة توصيات واضحة ومحددة.</li>
+                        <li><strong>الأسبوع 11-12: التنفيذ والقياس:</strong> البدء في تنفيذ توصية أو اثنتين. إنشاء لوحة معلومات بسيطة لمتابعة المؤشرات الرئيسية. قياس تأثير التغييرات. توثيق الدروس المستفادة وتحديد الخطوات التالية.</li>
+                    </ul>
+                </section>
+
+                <!-- الفصل 15 -->
+                <section class="analysis-section">
+                    <h2>الفصل الخامس عشر: قائمة مراجعة (Checklist) لأفضل ممارسات تحليل البيانات</h2>
+                    <ul>
+                        <li>✅ حدد أهداف العمل قبل جمع البيانات.</li>
+                        <li>✅ استثمر الوقت في تنظيف البيانات (هو أهم خطوة).</li>
+                        <li>✅ اختر أدوات تتناسب مع حجم مشروعك ومهارات فريقك.</li>
+                        <li>✅ لا تثق بالنتيجة دون فهم كيف تم الوصول إليها.</li>
+                        <li>✅ استخدم أكثر من أسلوب تحليلي للتأكد من النتائج.</li>
+                        <li>✅ ركز على التصور الواضح الذي يروي قصة.</li>
+                        <li>✅ شارك النتائج مع فريقك وناقشها.</li>
+                        <li>✅ قم بتحديث تحليلاتك باستمرار مع توفر بيانات جديدة.</li>
+                        <li>✅ تعامل مع بيانات العملاء بأمانة وأمان.</li>
+                        <li>✅ تعلم من أخطائك وطور أدواتك ومهاراتك.</li>
+                    </ul>
+                    <p style="font-size: 2em; text-align: center; margin-top: 50px;">🔷🔶🔷🔶🔷</p>
+                    <p style="text-align: center; font-weight: bold;">انتهى التحليل الموسع - نتمنى لكم التوفيق في مشاريعكم</p>
+                </section>
+            </div>
+        </div>
+
+        <!-- صفحة لوحة المعلومات (ضخمة جداً) -->
+        <div id="page3" class="page">
+            <div class="download-buttons">
+                <button class="btn btn-ppt" onclick="downloadPPT()"><span>📊</span> تحميل لوحة المعلومات</button>
+            </div>
+
+            <div class="dashboard-header">
+                <h1>لوحة معلومات المشروع التفصيلية</h1>
+                <p>تحليل بيانات المشاريع الصغيرة - رؤى تفاعلية وقرارات ذكية</p>
+            </div>
+
+            <!-- قسم KPIs موسع -->
+            <div class="kpi-mega-grid">
+                <div class="kpi-card"><h4>إجمالي الإيرادات</h4><div class="kpi-main-value">4,250,000</div><div class="kpi-sub-value">جنيه <span class="trend-up">▲12.5%</span></div></div>
+                <div class="kpi-card"><h4>صافي الربح</h4><div class="kpi-main-value">892,500</div><div class="kpi-sub-value">جنيه <span class="trend-up">▲8.3%</span></div></div>
+                <div class="kpi-card"><h4>هامش الربح</h4><div class="kpi-main-value">32%</div><div class="kpi-sub-value"><span class="trend-up">▲2.1%</span></div></div>
+                <div class="kpi-card"><h4>عائد الاستثمار</h4><div class="kpi-main-value">21%</div><div class="kpi-sub-value"><span class="trend-up">▲3%</span></div></div>
+                <div class="kpi-card"><h4>تكلفة اكتساب العميل</h4><div class="kpi-main-value">280</div><div class="kpi-sub-value">جنيه <span class="trend-down">▼15%</span></div></div>
+                <div class="kpi-card"><h4>القيمة الدائمة للعميل</h4><div class="kpi-main-value">1,850</div><div class="kpi-sub-value">جنيه <span class="trend-up">▲22%</span></div></div>
+                <div class="kpi-card"><h4>نسبة CLV/CAC</h4><div class="kpi-main-value">6.6</div><div class="kpi-sub-value">ممتاز (>3)</div></div>
+                <div class="kpi-card"><h4>معدل الاحتفاظ</h4><div class="kpi-main-value">78%</div><div class="kpi-sub-value"><span class="trend-up">▲8%</span></div></div>
+                <div class="kpi-card"><h4>معدل التحويل</h4><div class="kpi-main-value">2.9%</div><div class="kpi-sub-value"><span class="trend-up">▲0.7%</span></div></div>
+                <div class="kpi-card"><h4>صافي نقاط الترويج</h4><div class="kpi-main-value">+52</div><div class="kpi-sub-value">ممتاز</div></div>
+                <div class="kpi-card"><h4>متوسط قيمة الطلب</h4><div class="kpi-main-value">650</div><div class="kpi-sub-value">جنيه <span class="trend-up">▲5%</span></div></div>
+                <div class="kpi-card"><h4>معدل دوران المخزون</h4><div class="kpi-main-value">8.5</div><div class="kpi-sub-value">مرة/سنة</div></div>
+                <div class="kpi-card"><h4>نسبة العيوب</h4><div class="kpi-main-value">2.1%</div><div class="kpi-sub-value"><span class="trend-down">▼0.4%</span></div></div>
+                <div class="kpi-card"><h4>إنتاجية الموظف</h4><div class="kpi-main-value">385k</div><div class="kpi-sub-value">جنيه/موظف</div></div>
+                <div class="kpi-card"><h4>السيولة السريعة</h4><div class="kpi-main-value">1.4</div><div class="kpi-sub-value">جيد</div></div>
+                <div class="kpi-card"><h4>نسبة الدين</h4><div class="kpi-main-value">0.35</div><div class="kpi-sub-value"><span class="trend-down">▼0.05</span></div></div>
+                <div class="kpi-card"><h4>نمو المبيعات السنوي</h4><div class="kpi-main-value">28%</div><div class="kpi-sub-value"><span class="trend-up">▲</span></div></div>
+                <div class="kpi-card"><h4>حركة المرور الشهرية</h4><div class="kpi-main-value">85,200</div><div class="kpi-sub-value">زائر <span class="trend-up">▲18%</span></div></div>
+                <div class="kpi-card"><h4>معدل الارتداد</h4><div class="kpi-main-value">42%</div><div class="kpi-sub-value"><span class="trend-down">▼5%</span></div></div>
+                <div class="kpi-card"><h4>مشاهدة الصفحات</h4><div class="kpi-main-value">3.2</div><div class="kpi-sub-value">لكل جلسة</div></div>
+                <div class="kpi-card"><h4>مدة الجلسة</h4><div class="kpi-main-value">4:15</div><div class="kpi-sub-value">دقيقة</div></div>
+                <div class="kpi-card"><h4>نسبة الزيارات العضوية</h4><div class="kpi-main-value">45%</div><div class="kpi-sub-value"><span class="trend-up">▲7%</span></div></div>
+                <div class="kpi-card"><h4>نسبة زيارات الجوال</h4><div class="kpi-main-value">68%</div><div class="kpi-sub-value"><span class="trend-up">▲</span></div></div>
+                <div class="kpi-card"><h4>العملاء الجدد (شهرياً)</h4><div class="kpi-main-value">420</div><div class="kpi-sub-value"><span class="trend-up">▲12%</span></div></div>
+                <div class="kpi-card"><h4>العملاء المتكررون</h4><div class="kpi-main-value">1,150</div><div class="kpi-sub-value"><span class="trend-up">▲9%</span></div></div>
+                <div class="kpi-card"><h4>نسبة العملاء النشطين</h4><div class="kpi-main-value">81%</div><div class="kpi-sub-value"><span class="trend-up">▲</span></div></div>
+                <div class="kpi-card"><h4>متوسط وقت الحل</h4><div class="kpi-main-value">4.5</div><div class="kpi-sub-value">ساعة <span class="trend-down">▼1.2</span></div></div>
+                <div class="kpi-card"><h4>رضا العملاء</h4><div class="kpi-main-value">4.6</div><div class="kpi-sub-value">/5 <span class="trend-up">▲0.3</span></div></div>
+                <div class="kpi-card"><h4>تذاكر الدعم</h4><div class="kpi-main-value">320</div><div class="kpi-sub-value">شهرياً <span class="trend-down">▼8%</span></div></div>
+                <div class="kpi-card"><h4>معدل الإحالات</h4><div class="kpi-main-value">18%</div><div class="kpi-sub-value"><span class="trend-up">▲4%</span></div></div>
+                <div class="kpi-card"><h4>التواجد بوسائل التواصل</h4><div class="kpi-main-value">22k</div><div class="kpi-sub-value">متابع <span class="trend-up">▲</span></div></div>
+                <div class="kpi-card"><h4>معدل التفاعل</h4><div class="kpi-main-value">3.8%</div><div class="kpi-sub-value"><span class="trend-up">▲</span></div></div>
+            </div>
+
+            <!-- البطاقات الكبيرة -->
+            <div class="stats-grid">
+                <div class="stat-card"><h3>إجمالي المشاريع المحللة</h3><div class="number">1,500</div><p>مشروع</p></div>
+                <div class="stat-card"><h3>المشاريع الناجحة</h3><div class="number">1,170</div><p>نسبة نجاح 78%</p></div>
+                <div class="stat-card"><h3>نمو الإيرادات بعد التحليل</h3><div class="number">35%</div><p>متوسط</p></div>
+                <div class="stat-card"><h3>خفض التكاليف التشغيلية</h3><div class="number">25%</div><p>متوسط</p></div>
+                <div class="stat-card"><h3>زيادة الاحتفاظ بالعملاء</h3><div class="number">40%</div><p>بعد التوصيات</p></div>
+                <div class="stat-card"><h3>تحسن هامش الربح</h3><div class="number">15%</div><p>نقطة مئوية</p></div>
+                <div class="stat-card"><h3>المشاريع قيد التحليل</h3><div class="number">330</div><p>مشروع</p></div>
+                <div class="stat-card"><h3>مجالات متنوعة</h3><div class="number">25+</div><p>قطاع</p></div>
+            </div>
+
+            <!-- الرسوم البيانية الضخمة -->
+            <div class="charts-mega-container">
+                <!-- رسم 1: أعمدة -->
+                <div class="chart-mega-box">
+                    <h3>توزيع المشاريع حسب القطاع</h3>
+                    <div class="chart">
+                        <div class="bar-chart">
+                            <div class="bar" style="height: 280px;"><span class="bar-value">420</span><span class="bar-label">تجاري</span></div>
+                            <div class="bar" style="height: 260px;"><span class="bar-value">380</span><span class="bar-label">خدمي</span></div>
+                            <div class="bar" style="height: 320px;"><span class="bar-value">520</span><span class="bar-label">تقني</span></div>
+                            <div class="bar" style="height: 210px;"><span class="bar-value">280</span><span class="bar-label">تعليمي</span></div>
+                            <div class="bar" style="height: 170px;"><span class="bar-value">220</span><span class="bar-label">زراعي</span></div>
+                            <div class="bar" style="height: 150px;"><span class="bar-value">180</span><span class="bar-label">صحي</span></div>
+                            <div class="bar" style="height: 190px;"><span class="bar-value">240</span><span class="bar-label">عقاري</span></div>
+                            <div class="bar" style="height: 130px;"><span class="bar-value">160</span><span class="bar-label">نقل</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- رسم 2: دائري متطور -->
+                <div class="chart-mega-box">
+                    <h3>نسبة نجاح المشاريع حسب القطاع</h3>
+                    <div class="pie-chart-container">
+                        <div class="pie-chart" style="background: conic-gradient(#1e3a8a 0% 35%, #2563eb 35% 60%, #3b82f6 60% 75%, #60a5fa 75% 85%, #93c5fd 85% 92%, #bfdbfe 92% 100%);"></div>
+                        <div class="pie-legend">
+                            <div class="legend-item"><div class="legend-color" style="background: #1e3a8a;"></div><span>تقني (35%)</span></div>
+                            <div class="legend-item"><div class="legend-color" style="background: #2563eb;"></div><span>خدمي (25%)</span></div>
+                            <div class="legend-item"><div class="legend-color" style="background: #3b82f6;"></div><span>تجاري (15%)</span></div>
+                            <div class="legend-item"><div class="legend-color" style="background: #60a5fa;"></div><span>تعليمي (10%)</span></div>
+                            <div class="legend-item"><div class="legend-color" style="background: #93c5fd;"></div><span>زراعي (7%)</span></div>
+                            <div class="legend-item"><div class="legend-color" style="background: #bfdbfe;"></div><span>أخرى (8%)</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- رسم 3: خطي -->
+                <div class="chart-mega-box">
+                    <h3>اتجاه نمو الإيرادات (شهري)</h3>
+                    <div class="line-chart">
+                        <div class="line-point"><span>يناير</span><div class="point" style="height: 80px;"></div><span>80k</span></div>
+                        <div class="line-point"><span>فبراير</span><div class="point" style="height: 95px;"></div><span>95k</span></div>
+                        <div class="line-point"><span>مارس</span><div class="point" style="height: 110px;"></div><span>110k</span></div>
+                        <div class="line-point"><span>أبريل</span><div class="point" style="height: 130px;"></div><span>130k</span></div>
+                        <div class="line-point"><span>مايو</span><div class="point" style="height: 125px;"></div><span>125k</span></div>
+                        <div class="line-point"><span>يونيو</span><div class="point" style="height: 150px;"></div><span>150k</span></div>
+                        <div class="line-point"><span>يوليو</span><div class="point" style="height: 180px;"></div><span>180k</span></div>
+                        <div class="line-point"><span>أغسطس</span><div class="point" style="height: 210px;"></div><span>210k</span></div>
+                        <div class="line-point"><span>سبتمبر</span><div class="point" style="height: 200px;"></div><span>200k</span></div>
+                        <div class="line-point"><span>أكتوبر</span><div class="point" style="height: 230px;"></div><span>230k</span></div>
+                        <div class="line-point"><span>نوفمبر</span><div class="point" style="height: 260px;"></div><span>260k</span></div>
+                        <div class="line-point"><span>ديسمبر</span><div class="point" style="height: 300px;"></div><span>300k</span></div>
+                    </div>
+                </div>
+
+                <!-- رسم 4: رادار بسيط -->
+                <div class="chart-mega-box">
+                    <h3>تحليل أداء المشروع (رادار)</h3>
+                    <div class="radar-chart">
+                        <svg viewBox="0 0 300 300" class="radar-svg">
+                            <polygon points="150,40 240,100 270,200 200,270 100,270 30,200 60,100 150,40" fill="none" stroke="#2563eb" stroke-width="2" fill-opacity="0.1" fill="#bfdbfe"/>
+                            <polygon points="150,70 220,115 240,190 190,240 110,240 60,190 80,115 150,70" fill="#2563eb" fill-opacity="0.3"/>
+                            <circle cx="150" cy="40" r="5" fill="#1e3a8a"/>
+                            <circle cx="240" cy="100" r="5" fill="#1e3a8a"/>
+                            <circle cx="270" cy="200" r="5" fill="#1e3a8a"/>
+                            <circle cx="200" cy="270" r="5" fill="#1e3a8a"/>
+                            <circle cx="100" cy="270" r="5" fill="#1e3a8a"/>
+                            <circle cx="30" cy="200" r="5" fill="#1e3a8a"/>
+                            <circle cx="60" cy="100" r="5" fill="#1e3a8a"/>
+                            <text x="150" y="20" text-anchor="middle" fill="#1e3a8a">المالية</text>
+                            <text x="270" y="80" text-anchor="start" fill="#1e3a8a">التسويق</text>
+                            <text x="300" y="200" text-anchor="start" fill="#1e3a8a">العمليات</text>
+                            <text x="200" y="290" text-anchor="middle" fill="#1e3a8a">العملاء</text>
+                            <text x="50" y="290" text-anchor="middle" fill="#1e3a8a">الموارد</text>
+                            <text x="0" y="200" text-anchor="end" fill="#1e3a8a">الابتكار</text>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- رسم 5: فقاعي -->
+                <div class="chart-mega-box">
+                    <h3>تحليل حجم السوق - فقاعي</h3>
+                    <div class="bubble-chart">
+                        <div class="bubble bubble-1">قطاع التقنية<br>520 مشروع</div>
+                        <div class="bubble bubble-2">قطاع الخدمات<br>380</div>
+                        <div class="bubble bubble-3">قطاع التجاري<br>420</div>
+                        <div class="bubble bubble-4">التعليمي<br>280</div>
+                        <div class="bubble bubble-5">الزراعي<br>220</div>
+                    </div>
+                </div>
+
+                <!-- رسم 6: مساحي -->
+                <div class="chart-mega-box">
+                    <h3>نمو عدد المشاريع (سنوات)</h3>
+                    <div class="area-chart">
+                        <div class="area-column"><div class="area-fill" style="height: 120px;"></div><span class="area-label">2022</span></div>
+                        <div class="area-column"><div class="area-fill" style="height: 180px;"></div><span class="area-label">2023</span></div>
+                        <div class="area-column"><div class="area-fill" style="height: 250px;"></div><span class="area-label">2024</span></div>
+                        <div class="area-column"><div class="area-fill" style="height: 320px;"></div><span class="area-label">2025</span></div>
+                        <div class="area-column"><div class="area-fill" style="height: 380px;"></div><span class="area-label">2026</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- جدول البيانات الضخم -->
+            <div class="recent-data">
+                <h3 style="color: #1e3a8a;">بيانات تفصيلية لـ 25 مشروعاً (عينة)</h3>
+                <table class="data-table">
+                    <thead><tr><th>المشروع</th><th>القطاع</th><th>الإيرادات (ألف)</th><th>الربح (ألف)</th><th>نسبة النجاح</th><th>عدد العملاء</th><th>متوسط الطلب</th><th>التقييم</th></tr></thead>
+                    <tbody>
+                        <tr><td>مشروع أ</td><td>تقني</td><td>850</td><td>210</td><td>92%</td><td>320</td><td>2650</td><td>4.8</td></tr>
+                        <tr><td>مشروع ب</td><td>تجاري</td><td>620</td><td>145</td><td>78%</td><td>1180</td><td>525</td><td>4.2</td></tr>
+                        <tr><td>مشروع ج</td><td>خدمي</td><td>430</td><td>95</td><td>81%</td><td>420</td><td>1020</td><td>4.5</td></tr>
+                        <tr><td>مشروع د</td><td>تعليمي</td><td>290</td><td>72</td><td>85%</td><td>180</td><td>1610</td><td>4.7</td></tr>
+                        <tr><td>مشروع هـ</td><td>زراعي</td><td>175</td><td>38</td><td>64%</td><td>230</td><td>760</td><td>3.9</td></tr>
+                        <tr><td>مشروع و</td><td>صحي</td><td>510</td><td>122</td><td>89%</td><td>590</td><td>864</td><td>4.6</td></tr>
+                        <tr><td>مشروع ز</td><td>تقني</td><td>1120</td><td>335</td><td>95%</td><td>870</td><td>1287</td><td>4.9</td></tr>
+                        <tr><td>مشروع ح</td><td>عقاري</td><td>780</td><td>165</td><td>72%</td><td>140</td><td>5571</td><td>4.0</td></tr>
+                        <tr><td>مشروع ط</td><td>نقل</td><td>340</td><td>62</td><td>69%</td><td>520</td><td>654</td><td>3.8</td></tr>
+                        <tr><td>مشروع ي</td><td>خدمي</td><td>495</td><td>118</td><td>83%</td><td>610</td><td>811</td><td>4.3</td></tr>
+                        <tr><td>مشروع ك</td><td>تقني</td><td>2100</td><td>630</td><td>97%</td><td>1450</td><td>1448</td><td>5.0</td></tr>
+                        <tr><td>مشروع ل</td><td>تجاري</td><td>880</td><td>202</td><td>76%</td><td>1650</td><td>533</td><td>4.1</td></tr>
+                        <tr><td>مشروع م</td><td>تعليمي</td><td>410</td><td>105</td><td>88%</td><td>290</td><td>1414</td><td>4.6</td></tr>
+                        <tr><td>مشروع ن</td><td>زراعي</td><td>220</td><td>41</td><td>59%</td><td>150</td><td>1467</td><td>3.5</td></tr>
+                        <tr><td>مشروع س</td><td>صحي</td><td>605</td><td>139</td><td>86%</td><td>480</td><td>1260</td><td>4.4</td></tr>
+                        <tr><td>مشروع ع</td><td>خدمي</td><td>380</td><td>83</td><td>74%</td><td>340</td><td>1118</td><td>4.0</td></tr>
+                        <tr><td>مشروع ف</td><td>تقني</td><td>1560</td><td>452</td><td>94%</td><td>1220</td><td>1279</td><td>4.8</td></tr>
+                        <tr><td>مشروع ص</td><td>تجاري</td><td>720</td><td>158</td><td>80%</td><td>1400</td><td>514</td><td>4.2</td></tr>
+                        <tr><td>مشروع ق</td><td>عقاري</td><td>920</td><td>184</td><td>70%</td><td>90</td><td>10222</td><td>4.0</td></tr>
+                        <tr><td>مشروع ر</td><td>نقل</td><td>285</td><td>48</td><td>62%</td><td>360</td><td>792</td><td>3.7</td></tr>
+                        <tr><td>مشروع ش</td><td>تعليمي</td><td>530</td><td>143</td><td>90%</td><td>410</td><td>1293</td><td>4.7</td></tr>
+                        <tr><td>مشروع ت</td><td>زراعي</td><td>190</td><td>35</td><td>61%</td><td>170</td><td>1118</td><td>3.6</td></tr>
+                        <tr><td>مشروع ث</td><td>صحي</td><td>670</td><td>154</td><td>87%</td><td>550</td><td>1218</td><td>4.5</td></tr>
+                        <tr><td>مشروع خ</td><td>تقني</td><td>1850</td><td>518</td><td>96%</td><td>1350</td><td>1370</td><td>4.9</td></tr>
+                        <tr><td>مشروع ذ</td><td>خدمي</td><td>420</td><td>92</td><td>77%</td><td>480</td><td>875</td><td>4.1</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- رؤى وتوصيات إضافية -->
+            <div class="recent-data" style="margin-top: 40px;">
+                <h3 style="color: #1e3a8a;">أهم الرؤى المستخلصة من التحليل</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px;">
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>📈 تحسين المبيعات</h4><p>زيادة المبيعات بمتوسط 35% بعد تطبيق التحليل، مع أعلى زيادة في قطاع التقنية (58%).</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>💰 خفض التكاليف</h4><p>خفض التكاليف التشغيلية بنسبة 25% في المتوسط، مع أفضل النتائج في قطاع الخدمات (31%).</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>👥 ولاء العملاء</h4><p>زيادة الاحتفاظ بالعملاء بنسبة 40%، وتحسن صافي نقاط الترويج (NPS) بمقدار 25 نقطة.</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>📊 قرارات أفضل</h4><p>92% من المشاريع أكدت تحسن جودة القرارات بعد الاعتماد على التحليلات.</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>⏱️ سرعة الإنجاز</h4><p>انخفاض وقت دورة الإنتاج أو تقديم الخدمة بنسبة 22% في المتوسط.</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>🎯 دقة التسويق</h4><p>تحسين استهداف الحملات التسويقية أدى إلى زيادة معدل التحويل بنسبة 2.3%.</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>📦 إدارة المخزون</h4><p>تقليل المخزون الراكد بنسبة 35% وتحسين معدل الدوران بنسبة 28%.</p></div>
+                    <div style="background: white; padding: 35px; border-radius: 40px; border-right: 10px solid #2563eb;"><h4>🏆 رضا الموظفين</h4><p>تحسن بيئة العمل ورضا الموظفين بنسبة 18% بعد وضوح الأهداف والمؤشرات.</p></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 60px 0; font-size: 2em; color: #1e3a8a;">
+                <p>🔹🔸🔹🔸🔹 نهاية لوحة المعلومات 🔹🔸🔹🔸🔹</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>جميع الحقوق محفوظة © ٢٠٢٦ - مشروع التخرج - المعهد العالي للتسويق والتجارة ونظم المعلومات</p>
+        </footer>
+    </div>
+
+    <script>
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            document.querySelectorAll('.navbar a').forEach(l => l.classList.remove('active'));
+            document.getElementById('nav-' + pageId).classList.add('active');
+        }
+
+        function downloadPDF() {
+            try {
+                const activePage = document.querySelector('.page.active');
+                if (!activePage) return;
+                
+                const opt = {
+                    margin: [0.3, 0.3, 0.3, 0.3],
+                    filename: 'تقرير_مشروع_التخرج.pdf',
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: { scale: 1.5, useCORS: true, logging: false },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                alert('جاري تحميل ملف PDF للصفحة الحالية...');
+                html2pdf().from(activePage).set(opt).save();
+            } catch (error) {
+                alert('حدث خطأ أثناء تحميل PDF');
+            }
+        }
+
+        function downloadPPT() {
+            try {
+                const activePage = document.querySelector('.page.active');
+                if (!activePage) return;
+                
+                const clonePage = activePage.cloneNode(true);
+                const buttons = clonePage.querySelector('.download-buttons');
+                if (buttons) buttons.remove();
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    body { font-family: 'Cairo', sans-serif; margin: 0; padding: 20px; direction: rtl; background: white; }
+                    .page { display: block !important; box-shadow: none; padding: 30px; }
+                    .download-buttons, .navbar, footer { display: none; }
+                `;
+                
+                const htmlContent = `
+                    <!DOCTYPE html>
+                    <html dir="rtl">
+                    <head><meta charset="UTF-8"><title>تقرير مشروع التخرج</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+                    <style>${document.querySelector('style').innerHTML}${style.textContent}</style></head>
+                    <body>${clonePage.outerHTML}</body></html>
+                `;
+                
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'تقرير_مشروع_التخرج.html';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                alert('تم التحميل. افتح الملف في PowerPoint.');
+            } catch (error) {
+                alert('حدث خطأ');
+            }
+        }
+
+        document.querySelectorAll('.navbar a').forEach(link => {
+            link.addEventListener('click', e => e.preventDefault());
+        });
+    </script>
+</body>
+</html>
